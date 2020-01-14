@@ -35,9 +35,7 @@ public class MainController {
         role.setRoleName("BASIC");
         account.setRoles(Arrays.asList(role));
         Map<String, Object> map = new HashMap<>();
-        /*
-        if (userRepository.findUserByEmail(user.getEmail())
-        */
+
         if (accountRepository.findUserByUsername(account.getUsername()) == null) {
             account.setUsername(account.getUsername());
             account.setEmail(account.getEmail());
@@ -51,6 +49,8 @@ public class MainController {
         }
         return map;
     }
+
+
 
     @PostMapping(path="/checkemail")
     public boolean checkEmail (@RequestBody Map<String, String> m) {

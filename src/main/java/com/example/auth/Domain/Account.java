@@ -19,8 +19,10 @@ public class Account {
     private String username;
 
     @Column(nullable=false, unique=true, length=50)
-    private String password;
     private String email;
+
+
+    private String password;
 
     @CreationTimestamp
     private Date regdate;
