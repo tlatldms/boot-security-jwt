@@ -6,7 +6,7 @@ class NewUser extends Component {
         super(props)
 
         this.state = {
-                 
+                checked_email: false 
         }
     }
     handleChange = (e) => {
@@ -15,46 +15,101 @@ class NewUser extends Component {
         })
     }
     
-    handleSubmit = (e) => {
-        axios.post("http://localhost:8080/demo/add",  {
-            
-            username: String(this.state.username),
-            email: String(this.state.email),
-            password: String(this.state.password)
-         
-        }).then(res => {
-            console.log(res);
+    handleEmailCheck = (e) => {
+        axios.post("http://localhost:8080/newuser/checkemail", 
+            { email: this.state.email}
+        )
+        .then(res => {
+            if (res.data){
+                alert("사용 가능한 이메일입니다.");
+                this.setState({
+                    checked_email : true 
+                });
+            } else {
+                alert("이미 존재하는 이메일입니다.");
+                this.setState({
+                    email:'',
+                    checked_email: false
+                });
+            }
         }
         ).catch(e => {
             console.log(e);
         })
     }
 
+
+    test = (e) => {
+        axios.post("http://localhost:8080/newuser/test", 
+        { username: this.state.username,
+          password: this.state.password}
+    )
+    .then(res => {
+        console.log(res);
+    }
+    ).catch(e => {
+        console.log(e);
+    })
+    }
+  
+    handleSubmit = (e) => {
+        e.preventDefault();
+        
+        if (!this.state.checked_email) {
+            alert("이메일 중복체크를 먼저 해주십시오.");
+        } else {
+            axios.post("http://localhost:8080/newuser/add",  {
+            
+                username: String(this.state.username),
+                email: String(this.state.email),
+                password: String(this.state.password)
+                
+            }).then(res => {
+                if (!res.data.success){
+                    alert("이미 존재하는 아이디입니다.");
+                } else {
+                    alert("가입에 성공했습니다.");
+                    window.location.reload();
+                }
+            }
+            ).catch(e => {
+                console.log(e);
+            })
+        }
+    
+    }
+  
+
     render() {
         return (
             <React.Fragment>
-            <div>
-                Email
+                NewUser
+                <form onSubmit={this.handleSubmit}>
+                    Email
+                    <input 
+                        name="email"
+                        value= {this.state.email}
+                        onChange={this.handleChange}
+                    /> <button type="button" onClick={this.handleEmailCheck}>중복체크</button>
+                    <br />
+                    Username
+                    <input 
+                        value={this.state.username}
+                        name="username"
+                        onChange={this.handleChange}
+                    />
+                    <br />
+                    Password
                 <input 
-                    name="email"
-                    onChange={this.handleChange}
-                />
-            </div>
-             <div>
-                Username
-                <input 
-                    name="username"
-                    onChange={this.handleChange}
-                />
-            </div>
-             <div>
-                 Password
-             <input 
-                    name="password"
-                    onChange={this.handleChange}
-                />
-            </div>
-            <div><button onClick={this.handleSubmit}>확인</button></div>
+                        type="password"
+                        name="password"
+                        value={this.state.password}
+                        onChange={this.handleChange}
+                    />
+                
+                <div><button type="submit"  >확인</button></div>
+                </form>
+                <br/><br/><button onClick={this.test}>테스트용</button>
             </React.Fragment>
         )
     }
