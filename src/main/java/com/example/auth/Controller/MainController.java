@@ -2,7 +2,9 @@ package com.example.auth.Controller;
 
 import com.example.auth.Domain.Account;
 import com.example.auth.Domain.AccountRole;
+import com.example.auth.Domain.Token;
 import com.example.auth.Repository.AccountRepository;
+import com.example.auth.Repository.RedisRepository;
 import com.example.auth.jwt.JwtTokenUtil;
 import com.example.auth.service.JwtUserDetailsService;
 
@@ -25,7 +27,7 @@ import java.util.Map;
 
 @RestController
 @CrossOrigin
-@RequestMapping(path="/newuser") // This means URL's start with /demo (after Application path)
+@RequestMapping // This means URL's start with /demo (after Application path)
 public class MainController {
     private Logger logger = LoggerFactory.getLogger(ApplicationRunner.class);
 
@@ -45,22 +47,29 @@ public class MainController {
     @Autowired
     private AuthenticationManager am;
 
-    @RequestMapping(value = "/test", method = RequestMethod.POST)
-    public String authenTest(@RequestBody Map<String, String> m) throws Exception {
+    @Autowired
+    RedisRepository redisRepository;
+
+    @RequestMapping(value = "/newuser/test", method = RequestMethod.POST)
+    public Map<String, Object> authenTest(@RequestBody Map<String, String> m) throws Exception {
         logger.info("test input username: " + m.get("username") + ", password: " + m.get("password"));
-        //BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        //System.out.println("match? " + passwordEncoder.matches(m.get("password"), accountRepository.findUserByUsername(m.get("username")).getPassword()));
         am.authenticate(new UsernamePasswordAuthenticationToken(m.get("username"), m.get("password")));
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(m.get("username"));
         final String token = jwtTokenUtil.generateToken(userDetails);
         System.out.println("test input username: " + m.get("username") + ", password: " + m.get("password"));
         System.out.println("token: " + token);
-        return "token: " + token;
+        Token tok = new Token();
+        tok.setUsername(m.get("username"));
+        tok.setToken(token);
+        redisRepository.save(tok);
+        Map<String, Object> map = new HashMap<>();
+        map.put("token", token);
+        return map;
     }
 
 
-    @PostMapping(path="/add") // Map ONLY POST Requests
+    @PostMapping(path="/newuser/add") // Map ONLY POST Requests
     public Map<String, Object> addNewUser (@RequestBody Account account) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
@@ -89,7 +98,7 @@ public class MainController {
 
 
 
-    @PostMapping(path="/checkemail")
+    @PostMapping(path="/newuser/checkemail")
     public boolean checkEmail (@RequestBody Map<String, String> m) {
         System.out.println("이메일체크 요청 이메일: " + m.get("email"));
         if (accountRepository.findUserByEmail(m.get("email")) == null) return true;
@@ -100,5 +109,15 @@ public class MainController {
     @GetMapping(path="/all")
     public Iterable<Account> getAllUsers() {
         return accountRepository.findAll();
+    }
+
+    @GetMapping(path="/newuser/hello")
+    public String hello() {
+        return "hello~";
+    }
+
+    @GetMapping(path="/admin/test")
+    public String admin() {
+        return "admin";
     }
 }
