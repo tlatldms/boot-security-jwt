@@ -30,13 +30,5 @@ public class Account {
     @UpdateTimestamp
     private Date updatedate;
 
-
-    //Role 따로 클래스 둘 때
-
-    @OneToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="username")
-    private List<AccountRole> roles;
-
-
-    //private String role;
+    private String role;
 }

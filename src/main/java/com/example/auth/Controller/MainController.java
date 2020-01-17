@@ -64,10 +64,10 @@ public class MainController {
         Token tok = new Token();
         tok.setUsername(m.get("username"));
         tok.setToken(token);
+
         ValueOperations<String, Object> vop = redisTemplate.opsForValue();
         vop.set(m.get("username"), tok);
-        Token result = (Token)vop.get(m.get("username"));
-        System.out.println("result: " + result);
+
 
         //redisRepository.save(tok);
         Map<String, Object> map = new HashMap<>();
@@ -80,17 +80,17 @@ public class MainController {
     public Map<String, Object> addNewUser (@RequestBody Account account) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
-
-        //Role 따로 클래스 만들었을 경우
-        AccountRole role = new AccountRole();
-        role.setRoleName("BASIC");
-        account.setRoles(Arrays.asList(role));
-
+        String un = account.getUsername();
         Map<String, Object> map = new HashMap<>();
-        System.out.println("회원가입요청 아이디: "+account.getUsername() + "비번: " + account.getPassword());
-        if (accountRepository.findUserByUsername(account.getUsername()) == null) {
-            account.setUsername(account.getUsername());
+        System.out.println("회원가입요청 아이디: "+un + "비번: " + account.getPassword());
+        if (accountRepository.findUserByUsername(un) == null) {
+            account.setUsername(un);
             account.setEmail(account.getEmail());
+            if (un.equals("admin")) {
+                account.setRole("ROLE_ADMIN");
+            } else {
+                account.setRole("USER_ADMIN");
+            }
 
             account.setPassword(bcryptEncoder.encode(account.getPassword()));
             map.put("success", true);
