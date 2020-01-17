@@ -4,14 +4,13 @@ import lombok.Data;
 import org.springframework.data.redis.core.RedisHash;
 
 import javax.persistence.Id;
+import java.io.Serializable;
 
 @Data
 @RedisHash
-public class Token {
+public class Token implements Serializable {
 
-    @Id
-    String id;
-
+    private static final long serialVersionUID = -7353484588260422449L;
     private String username;
     private String token;
 

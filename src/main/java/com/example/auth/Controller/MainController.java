@@ -4,7 +4,6 @@ import com.example.auth.Domain.Account;
 import com.example.auth.Domain.AccountRole;
 import com.example.auth.Domain.Token;
 import com.example.auth.Repository.AccountRepository;
-import com.example.auth.Repository.RedisRepository;
 import com.example.auth.jwt.JwtTokenUtil;
 import com.example.auth.service.JwtUserDetailsService;
 
@@ -13,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,6 +37,9 @@ public class MainController {
     private AccountRepository accountRepository;
 
     @Autowired
+    RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
     private PasswordEncoder bcryptEncoder;
 
     @Autowired
@@ -47,8 +51,6 @@ public class MainController {
     @Autowired
     private AuthenticationManager am;
 
-    @Autowired
-    RedisRepository redisRepository;
 
     @RequestMapping(value = "/newuser/test", method = RequestMethod.POST)
     public Map<String, Object> authenTest(@RequestBody Map<String, String> m) throws Exception {
@@ -62,7 +64,12 @@ public class MainController {
         Token tok = new Token();
         tok.setUsername(m.get("username"));
         tok.setToken(token);
-        redisRepository.save(tok);
+        ValueOperations<String, Object> vop = redisTemplate.opsForValue();
+        vop.set(m.get("username"), tok);
+        Token result = (Token)vop.get(m.get("username"));
+        System.out.println("result: " + result);
+
+        //redisRepository.save(tok);
         Map<String, Object> map = new HashMap<>();
         map.put("token", token);
         return map;
