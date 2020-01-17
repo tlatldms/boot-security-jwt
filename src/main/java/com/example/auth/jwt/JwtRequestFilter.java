@@ -36,26 +36,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        //System.out.println("JWTREQUESTFILTER!!!!!!");
+
         final String requestTokenHeader = request.getHeader("Authorization");
-        //response.setHeader("Access-Control-Allow-Origin", "*");
+
         String username = null;
         String jwtToken = null;
         // JWT Token is in the form "Sieun token". Remove Sieun word and get
         // only the Token
-        if (requestTokenHeader == null ) {
-            System.out.println("reuqestTokenHeader is null !!!!!");
-        }
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Sieun ")) {
             jwtToken = requestTokenHeader.substring(6);
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
-                System.out.println("Unable to get JWT Token");
+                logger.warn("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token has expired");
+                logger.warn("JWT Token has expired");
             }
-            System.out.println("success to get token: " + jwtToken);
         } else {
             logger.warn("JWT Token does not begin with Sieun String");
         }
@@ -65,55 +61,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             ValueOperations<String, Object> vop = redisTemplate.opsForValue();
             Token result = (Token)vop.get(username);
-            //System.out.println("result: " + result);
             String tokstr = result.getToken();
-            System.out.println("result tokstr: " + tokstr);
-            System.out.println("expire date: " + jtu.getExpirationDateFromToken(tokstr));
+
+            logger.info("expire date: " + jtu.getExpirationDateFromToken(tokstr));
             if (!jtu.isTokenExpired(tokstr)) {
-                logger.info("this Token is VALID !!!");
+                logger.info("this Token is VALID !");
                 UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
+                logger.info("Authority of this user: " + userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // After setting the Authentication in the context, we specify
-                // that the current user is authenticated. So it passes the
-                // Spring Security Configurations successfully.
+                       .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                //실제 인증해주는 부분
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             } else {
-                logger.info("this Token is expired !!!");
+                logger.info("this Token is EXPIRED !");
             }
-
-
-
         }
 
 
-        //여긴 userDetails로 확인하는거.
-        /*
-        // Once we get the token validate it.
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
-            System.out.println("valid user with token request something. username: " + username);
-            // if token is valid configure Spring Security to manually set
-            // authentication
-            if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
-                logger.info("this Token is VALID !!!");
-
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // After setting the Authentication in the context, we specify
-                // that the current user is authenticated. So it passes the
-                // Spring Security Configurations successfully.
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-
-            }
-
-        }
-        */
         chain.doFilter(request, response);
     }
 }

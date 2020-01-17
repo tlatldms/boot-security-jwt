@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -89,7 +90,7 @@ public class MainController {
             if (un.equals("admin")) {
                 account.setRole("ROLE_ADMIN");
             } else {
-                account.setRole("USER_ADMIN");
+                account.setRole("ROLE_USER");
             }
 
             account.setPassword(bcryptEncoder.encode(account.getPassword()));
@@ -118,7 +119,8 @@ public class MainController {
         return accountRepository.findAll();
     }
 
-    @GetMapping(path="/newuser/hello")
+    @Secured("ROLE_ADMIN")
+    @GetMapping(path="/hello")
     public String hello() {
         return "hello~";
     }

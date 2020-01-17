@@ -58,7 +58,7 @@ class NewUser extends Component {
   
 
     sendToken = (e) => {
-        axios.get("http://localhost:8080/newuser/hello", 
+        axios.get("http://localhost:8080/hello", 
         {headers: {
             "Authorization" : "Sieun "+this.state.token
           }
