@@ -7,6 +7,10 @@ function Header() {
         <ul>
           <li>
             <Link to="/new">회원가입</Link>
+            <br/>
+            <Link to="/manage">관리 페이지</Link>
+            <br />
+            <Link to="/login">로그인 페이지</Link>
           </li>
          
         </ul>

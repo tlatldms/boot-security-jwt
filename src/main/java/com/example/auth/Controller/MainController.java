@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,8 +54,8 @@ public class MainController {
     private AuthenticationManager am;
 
 
-    @RequestMapping(value = "/newuser/test", method = RequestMethod.POST)
-    public Map<String, Object> authenTest(@RequestBody Map<String, String> m) throws Exception {
+    @RequestMapping(value = "/newuser/login", method = RequestMethod.POST)
+    public Map<String, Object> login(@RequestBody Map<String, String> m) throws Exception {
         logger.info("test input username: " + m.get("username") + ", password: " + m.get("password"));
         am.authenticate(new UsernamePasswordAuthenticationToken(m.get("username"), m.get("password")));
 
@@ -66,11 +67,10 @@ public class MainController {
         tok.setUsername(m.get("username"));
         tok.setToken(token);
 
+        //generate Token and save in redis
         ValueOperations<String, Object> vop = redisTemplate.opsForValue();
         vop.set(m.get("username"), tok);
 
-
-        //redisRepository.save(tok);
         Map<String, Object> map = new HashMap<>();
         map.put("token", token);
         return map;
@@ -84,7 +84,7 @@ public class MainController {
         String un = account.getUsername();
         Map<String, Object> map = new HashMap<>();
         System.out.println("회원가입요청 아이디: "+un + "비번: " + account.getPassword());
-        if (accountRepository.findUserByUsername(un) == null) {
+        if (accountRepository.findByUsername(un) == null) {
             account.setUsername(un);
             account.setEmail(account.getEmail());
             if (un.equals("admin")) {
@@ -109,12 +109,20 @@ public class MainController {
     @PostMapping(path="/newuser/checkemail")
     public boolean checkEmail (@RequestBody Map<String, String> m) {
         System.out.println("이메일체크 요청 이메일: " + m.get("email"));
-        if (accountRepository.findUserByEmail(m.get("email")) == null) return true;
+        if (accountRepository.findByEmail(m.get("email")) == null) return true;
         else return false;
     }
 
+    @Transactional
+    @PostMapping(path="/deleteuser")
+    public void deleteUser (@RequestBody Map<String, String> m) {
+        logger.info("delete user: " + m.get("username"));
+        Long result = accountRepository.deleteByUsername(m.get("username"));
+        logger.info("delete result: " + result);
+    }
 
-    @GetMapping(path="/all")
+    @Secured("ROLE_ADMIN")
+    @GetMapping(path="/getusers")
     public Iterable<Account> getAllUsers() {
         return accountRepository.findAll();
     }
