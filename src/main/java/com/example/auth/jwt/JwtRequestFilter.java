@@ -41,10 +41,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String username = null;
         String jwtToken = null;
-        // JWT Token is in the form "Sieun token". Remove Sieun word and get
+        // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
-        if (requestTokenHeader != null && requestTokenHeader.startsWith("Sieun ")) {
-            jwtToken = requestTokenHeader.substring(6);
+        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+            jwtToken = requestTokenHeader.substring(7);
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
@@ -53,7 +53,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 logger.warn("JWT Token has expired");
             }
         } else {
-            logger.warn("JWT Token does not begin with Sieun String");
+            logger.warn("JWT Token does not begin with Bearer String");
         }
 
         //Redis에 있는지 없는지 확인하기.

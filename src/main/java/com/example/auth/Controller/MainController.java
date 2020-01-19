@@ -138,4 +138,10 @@ public class MainController {
     public String admin() {
         return "admin";
     }
+
+    @Secured("ROLE_USER")
+    @GetMapping(path="/onlynormal")
+    public String onlyNormal() {
+        return "안녕 일반 유저";
+    }
 }

@@ -11,6 +11,8 @@ function Header() {
             <Link to="/manage">관리 페이지</Link>
             <br />
             <Link to="/login">로그인 페이지</Link>
+            <br />
+            <Link to="/normal">일반인 페이지</Link>
           </li>
          
         </ul>
