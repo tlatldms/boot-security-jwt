@@ -1,7 +1,6 @@
 package com.example.auth.Controller;
 
 import com.example.auth.Domain.Account;
-import com.example.auth.Domain.AccountRole;
 import com.example.auth.Domain.Token;
 import com.example.auth.Repository.AccountRepository;
 import com.example.auth.jwt.JwtTokenUtil;
@@ -23,7 +22,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,8 +59,10 @@ public class MainController {
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(m.get("username"));
         final String token = jwtTokenUtil.generateToken(userDetails);
-        System.out.println("test input username: " + m.get("username") + ", password: " + m.get("password"));
-        System.out.println("token: " + token);
+        logger.info("test input username: " + m.get("username") + ", password: " + m.get("password"));
+        logger.info("token: " + token);
+
+        /*
         Token tok = new Token();
         tok.setUsername(m.get("username"));
         tok.setToken(token);
@@ -70,6 +70,7 @@ public class MainController {
         //generate Token and save in redis
         ValueOperations<String, Object> vop = redisTemplate.opsForValue();
         vop.set(m.get("username"), tok);
+        */
 
         Map<String, Object> map = new HashMap<>();
         map.put("token", token);

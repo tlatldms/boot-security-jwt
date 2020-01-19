@@ -39,40 +39,6 @@ class NewUser extends Component {
         })
     }
 
-
-    test = (e) => {
-        axios.post("http://localhost:8080/newuser/test", 
-        { username: this.state.username,
-          password: this.state.password}
-    )
-    .then(res => {
-        console.log(res.data.token);
-        this.setState({
-            token: res.data.token
-        });
-    }
-    ).catch(e => {
-        console.log(e);
-    })
-    }
-  
-
-    sendToken = (e) => {
-        axios.get("http://localhost:8080/hello", 
-        {headers: {
-            "Authorization" : "Sieun "+this.state.token
-          }
-        }
-    )
-    .then(res => {
-        console.log(res);
-    }
-    ).catch(e => {
-        console.log(e);
-    })
-    }
-
-
     handleSubmit = (e) => {
         e.preventDefault();
         
@@ -130,8 +96,7 @@ class NewUser extends Component {
                 
                 <div><button type="submit"  >확인</button></div>
                 </form>
-                <br/><br/><button onClick={this.test}>테스트용</button>
-                <br/><button onClick={this.sendToken}>토큰 보내기</button>
+
             </React.Fragment>
         )
     }
