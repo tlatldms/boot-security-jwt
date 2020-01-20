@@ -74,6 +74,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         logger.info("tokenHeader: " + requestTokenHeader);
         String username = null;
         String jwtToken = null;
+
+
         // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
@@ -83,20 +85,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
                 logger.warn("Unable to get JWT Token");
-            }  catch (ExpiredJwtException e) {
-                logger.warn("JWT Token has expired");
+            }
+            catch (ExpiredJwtException e) {
             }
         } else {
             logger.warn("JWT Token does not begin with Bearer String");
         }
-
-        if (username != null && !jtu.isTokenExpired(jwtToken)) {
+        if (username == null) {
+            logger.info("token maybe expired: username is null.");
+        }
+        else if (username != null && !jtu.isTokenExpired(jwtToken)) {
             //DB access 대신에 파싱한 정보로 유저 만들기!
             Authentication authen =  getAuthentication(jwtToken);
             //만든 authentication 객체로 매번 인증받기
             SecurityContextHolder.getContext().setAuthentication(authen);
         } else {
-            logger.info("this Token is EXPIRED !");
+            logger.info("else");
         }
         logger.info("CONTEXT  :  " + SecurityContextHolder.getContext().getAuthentication());
 

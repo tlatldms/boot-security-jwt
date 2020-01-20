@@ -5,6 +5,8 @@ import com.example.auth.Domain.Token;
 import com.example.auth.Repository.AccountRepository;
 import com.example.auth.jwt.JwtTokenUtil;
 import com.example.auth.service.JwtUserDetailsService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,25 +124,45 @@ public class NewUserController {
         try {
             accessToken = m.get("accessToken");
             refreshToken = m.get("refreshToken");
-            username = jwtTokenUtil.getUsernameFromToken(accessToken);
-            logger.info("username in refresh method: " + username);
-            ValueOperations<String, Object> vop = redisTemplate.opsForValue();
-            Token result = (Token) vop.get(username);
-            refreshTokenFromDb = result.getRefreshToken();
-            logger.info("rtfrom db: " + refreshTokenFromDb);
+            logger.info("access token in rnat: " + accessToken);
+            try {
+                username = jwtTokenUtil.getUsernameFromToken(accessToken);
+            } catch (IllegalArgumentException e) {
+
+            } catch (ExpiredJwtException e) { //expire됐을 때
+                username = e.getClaims().getSubject();
+                logger.info("username from expired access token: " + username);
+            }
+
+            if (refreshToken != null) { //refresh를 같이 보냈으면.
+                try {
+                    ValueOperations<String, Object> vop = redisTemplate.opsForValue();
+                    Token result = (Token) vop.get(username);
+                    refreshTokenFromDb = result.getRefreshToken();
+                    logger.info("rtfrom db: " + refreshTokenFromDb);
+                } catch (IllegalArgumentException e) {
+                    logger.warn("illegal argument!!");
+                }
+                //둘이 일치하고 만료도 안됐으면 재발급 해주기.
+                if (refreshToken.equals(refreshTokenFromDb) && !jwtTokenUtil.isTokenExpired(refreshToken)) {
+                    final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    String newtok =  jwtTokenUtil.generateAccessToken(userDetails);
+                    map.put("success", true);
+                    map.put("accessToken", newtok);
+                } else {
+                    map.put("success", false);
+                    map.put("msg", "refresh token is expired.");
+                }
+            } else { //refresh token이 없으면
+                map.put("success", false);
+                map.put("msg", "your refresh token does not exist.");
+            }
+
         } catch (Exception e) {
             throw e;
         }
         logger.info("m: " + m);
-        //둘이 일치하고 만료도 안됐으면 db에서 다시 찾아서 재발급 해주기.
-        if (refreshToken.equals(refreshTokenFromDb) && !jwtTokenUtil.isTokenExpired(refreshToken)) {
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            String newtok =  jwtTokenUtil.generateAccessToken(userDetails);
-            map.put("success", true);
-            map.put("token", newtok);
-        } else {
-            map.put("success", false);
-        }
+
         return map;
     }
 }
