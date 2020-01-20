@@ -54,25 +54,31 @@ public class MainController {
 
     @RequestMapping(value = "/newuser/login", method = RequestMethod.POST)
     public Map<String, Object> login(@RequestBody Map<String, String> m) throws Exception {
-        logger.info("test input username: " + m.get("username") + ", password: " + m.get("password"));
-        am.authenticate(new UsernamePasswordAuthenticationToken(m.get("username"), m.get("password")));
+        final String username = m.get("username");
+        logger.info("test input username: " + username);
+        try {
+            am.authenticate(new UsernamePasswordAuthenticationToken(username, m.get("password")));
+        } catch (Exception e){
+            throw e;
+        }
 
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(m.get("username"));
-        final String token = jwtTokenUtil.generateAccessToken(userDetails);
-        logger.info("test input username: " + m.get("username") + ", password: " + m.get("password"));
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        final String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
+        final String refreshToken = jwtTokenUtil.generateRefreshToken(username);
 
-        /*
-        Token tok = new Token();
-        tok.setUsername(m.get("username"));
-        tok.setToken(token);
+        Token retok = new Token();
+        retok.setUsername(username);
+        retok.setToken(refreshToken);
 
         //generate Token and save in redis
         ValueOperations<String, Object> vop = redisTemplate.opsForValue();
-        vop.set(m.get("username"), tok);
-        */
-        logger.info("generated token: " + token);
+        vop.set(username, retok);
+
+        logger.info("generated access token: " + accessToken);
+        logger.info("generated refresh token: " + refreshToken);
         Map<String, Object> map = new HashMap<>();
-        map.put("token", token);
+        map.put("accessToken", accessToken);
+        map.put("refreshToken", refreshToken);
         return map;
     }
 

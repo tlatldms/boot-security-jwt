@@ -9,13 +9,14 @@ class Normal extends Component {
         this.state = {
             isNormal: false,
             msg: '',
-            token: cookie.load('token')
+            accessToken: cookie.load('access-token'),
+            refreshToken: cookie.load('refresh-token')
         }
     }
     componentDidMount(){
         axios.get("http://localhost:8080/onlynormal",
         {headers: {
-            "Authorization" : "Bearer "+ this.state.token
+            "Authorization" : "Bearer "+ this.state.accessToken
           }
         }
         )

@@ -10,13 +10,14 @@ class Manage extends Component {
         this.state = {
             users: [],
             notAuthorized: false,
-            token: cookie.load('token')
+            accessToken: cookie.load('access-token'),
+            refreshToken: cookie.load('refresh-token')
         }
     }
     componentDidMount(){
         axios.get("http://localhost:8080/getusers",
         {headers: {
-            "Authorization" : "Bearer "+ this.state.token
+            "Authorization" : "Bearer "+ this.state.accessToken
           }
         }
         )
