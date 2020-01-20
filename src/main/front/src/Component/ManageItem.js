@@ -10,7 +10,7 @@ class ManageItem extends Component {
     }
 
     deleteUser = (e) => {
-        axios.post("http://localhost:8080/deleteuser",
+        axios.post("http://localhost:8080/admin/deleteuser",
         {
             username: this.props.database.username
         }

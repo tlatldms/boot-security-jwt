@@ -16,7 +16,7 @@ import java.util.function.Function;
 public class JwtTokenUtil implements Serializable {
 
     private static final long serialVersionUID = -2550185165626007488L;
-    public static final long JWT_ACCESS_TOKEN_VALIDITY = 60; //1분
+    public static final long JWT_ACCESS_TOKEN_VALIDITY = 5* 60; //5분
     public static final long JWT_REFRESH_TOKEN_VALIDITY = 24 * 60 * 60 * 7; //일주일
     @Value("${jwt.secret}")
     private String secret;
@@ -47,7 +47,7 @@ public class JwtTokenUtil implements Serializable {
     }
 
     //check if the token has expired
-    protected Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
     }

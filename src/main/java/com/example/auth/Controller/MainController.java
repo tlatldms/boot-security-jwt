@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,102 +54,23 @@ public class MainController {
     private AuthenticationManager am;
 
 
-    @RequestMapping(value = "/newuser/login", method = RequestMethod.POST)
-    public Map<String, Object> login(@RequestBody Map<String, String> m) throws Exception {
-        final String username = m.get("username");
-        logger.info("test input username: " + username);
-        try {
-            am.authenticate(new UsernamePasswordAuthenticationToken(username, m.get("password")));
-        } catch (Exception e){
-            throw e;
-        }
-
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        final String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
-        final String refreshToken = jwtTokenUtil.generateRefreshToken(username);
-
-        Token retok = new Token();
-        retok.setUsername(username);
-        retok.setToken(refreshToken);
-
-        //generate Token and save in redis
-        ValueOperations<String, Object> vop = redisTemplate.opsForValue();
-        vop.set(username, retok);
-
-        logger.info("generated access token: " + accessToken);
-        logger.info("generated refresh token: " + refreshToken);
-        Map<String, Object> map = new HashMap<>();
-        map.put("accessToken", accessToken);
-        map.put("refreshToken", refreshToken);
-        return map;
-    }
-
-
-    @PostMapping(path="/newuser/add") // Map ONLY POST Requests
-    public Map<String, Object> addNewUser (@RequestBody Account account) {
-        // @ResponseBody means the returned String is the response, not a view name
-        // @RequestParam means it is a parameter from the GET or POST request
-        String un = account.getUsername();
-        Map<String, Object> map = new HashMap<>();
-        System.out.println("회원가입요청 아이디: "+un + "비번: " + account.getPassword());
-        if (accountRepository.findByUsername(un) == null) {
-            account.setUsername(un);
-            account.setEmail(account.getEmail());
-            if (un.equals("admin")) {
-                account.setRole("ROLE_ADMIN");
-            } else {
-                account.setRole("ROLE_USER");
-            }
-
-            account.setPassword(bcryptEncoder.encode(account.getPassword()));
-            map.put("success", true);
-            accountRepository.save(account);
-            return map;
-        } else {
-            map.put("success", false);
-            map.put("message", "duplicated username");
-        }
-        return map;
-    }
-
-
-
-    @PostMapping(path="/newuser/checkemail")
-    public boolean checkEmail (@RequestBody Map<String, String> m) {
-        System.out.println("이메일체크 요청 이메일: " + m.get("email"));
-        if (accountRepository.findByEmail(m.get("email")) == null) return true;
-        else return false;
-    }
-
     @Transactional
-    @PostMapping(path="/deleteuser")
+    @PostMapping(path="/admin/deleteuser")
     public void deleteUser (@RequestBody Map<String, String> m) {
         logger.info("delete user: " + m.get("username"));
         Long result = accountRepository.deleteByUsername(m.get("username"));
         logger.info("delete result: " + result);
     }
 
-    @Secured("ROLE_ADMIN")
-    @GetMapping(path="/getusers")
+    @GetMapping(path="/admin/getusers")
     public Iterable<Account> getAllUsers() {
         return accountRepository.findAll();
     }
 
-    @Secured("ROLE_ADMIN")
-    @GetMapping(path="/hello")
-    public String hello() {
-        return "hello~";
+    @GetMapping(path="/user/normal")
+    public ResponseEntity<?> onlyNormal() {
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-    @GetMapping(path="/admin/test")
-    public String admin() {
-        return "admin";
-    }
 
-    @CrossOrigin(origins = {"http://localhost:3000"})
-    @Secured("ROLE_USER")
-    @GetMapping(path="/onlynormal")
-    public String onlyNormal() {
-        return "안녕 일반 유저";
-    }
 }

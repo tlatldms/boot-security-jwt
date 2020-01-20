@@ -15,7 +15,7 @@ class Manage extends Component {
         }
     }
     componentDidMount(){
-        axios.get("http://localhost:8080/getusers",
+        axios.get("http://localhost:8080/admin/getusers",
         {headers: {
             "Authorization" : "Bearer "+ this.state.accessToken
           }
