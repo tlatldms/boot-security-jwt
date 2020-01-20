@@ -58,9 +58,8 @@ public class MainController {
         am.authenticate(new UsernamePasswordAuthenticationToken(m.get("username"), m.get("password")));
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(m.get("username"));
-        final String token = jwtTokenUtil.generateToken(userDetails);
+        final String token = jwtTokenUtil.generateAccessToken(userDetails);
         logger.info("test input username: " + m.get("username") + ", password: " + m.get("password"));
-        logger.info("token: " + token);
 
         /*
         Token tok = new Token();
@@ -71,7 +70,7 @@ public class MainController {
         ValueOperations<String, Object> vop = redisTemplate.opsForValue();
         vop.set(m.get("username"), tok);
         */
-
+        logger.info("generated token: " + token);
         Map<String, Object> map = new HashMap<>();
         map.put("token", token);
         return map;
@@ -139,6 +138,7 @@ public class MainController {
         return "admin";
     }
 
+    @CrossOrigin(origins = {"http://localhost:3000"})
     @Secured("ROLE_USER")
     @GetMapping(path="/onlynormal")
     public String onlyNormal() {
