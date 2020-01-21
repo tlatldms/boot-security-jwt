@@ -4,18 +4,14 @@ import { Link } from "react-router-dom";
 function Header() {
     return (
       <div>
-        <ul>
-          <li>
             <Link to="/new">회원가입</Link>
-            <br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;
             <Link to="/manage">관리 페이지</Link>
-            <br />
+            
+            <br/>
             <Link to="/login">로그인 페이지</Link>
-            <br />
-            <Link to="/normal">일반인 페이지</Link>
-          </li>
-         
-        </ul>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <Link to="/normal">공용 페이지</Link>
       </div>
     )
   }

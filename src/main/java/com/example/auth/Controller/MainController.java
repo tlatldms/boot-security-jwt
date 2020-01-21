@@ -111,7 +111,6 @@ public class MainController {
         } else {
             map.put("success", false);
         }
-
         return map;
     }
     @PostMapping(path = "/newuser/login")

@@ -54,9 +54,6 @@ class Login extends Component {
             'Content-Type': 'application/json',
             'Authorization' : "Bearer "+ cookie.load('access-token')
         };
-        const data = {
-            accessToken: this.state.accessToken
-        };
         axios.post("http://localhost:8080/newuser/out", data, {
          headers: headers
         }).then(res => {
@@ -67,7 +64,6 @@ class Login extends Component {
     }
 
     componentDidMount(){
-
         axios.post("http://localhost:8080/newuser/check", data, {
             headers: headers
            }).then(res => {
@@ -91,6 +87,7 @@ class Login extends Component {
             console.log(e);
         })
     }
+
     handleLogin = (e) => {
         e.preventDefault();
         axios.post("http://localhost:8080/newuser/login", 
@@ -107,6 +104,7 @@ class Login extends Component {
     })
     }
   
+    findPassword = (e) => {}
 
     render() {
         return (
@@ -133,7 +131,6 @@ class Login extends Component {
                         value={this.state.password}
                         onChange={this.handleChange}
                     />
-                
                 <div><button type="submit" >로그인하기</button></div>
                 </form>
                 

@@ -8,7 +8,8 @@ import Normal from './Normal'
 
 export default () => (
     <Router>
-      <Header />      
+      <Header />
+      <br/><br/><br/>   
       <Route path="/new" component={NewUser} /> 
       <Route path="/manage" component={Manage} />
       <Route path="/login" component={Login} />
