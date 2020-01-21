@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import axios from 'axios';
+import  { Redirect } from 'react-router-dom'
 
 class NewUser extends Component {
     constructor(props) {
@@ -7,7 +8,6 @@ class NewUser extends Component {
 
         this.state = {
                 checked_email: false,
-                token:''
         }
     }
     handleChange = (e) => {
@@ -46,20 +46,19 @@ class NewUser extends Component {
             alert("이메일 중복체크를 먼저 해주십시오.");
         } else {
             axios.post("http://localhost:8080/newuser/add",  {
-            
                 username: String(this.state.username),
                 email: String(this.state.email),
                 password: String(this.state.password)
-                
             }).then(res => {
                 if (!res.data.success){
                     alert("이미 존재하는 아이디입니다.");
                 } else {
                     alert("가입에 성공했습니다.");
-                    window.location.reload();
+                    this.setState({
+                        redirect: true
+                    });
                 }
-            }
-            ).catch(e => {
+            }).catch(e => {
                 console.log(e);
             })
         }
@@ -68,6 +67,9 @@ class NewUser extends Component {
   
 
     render() {
+        if (this.state.redirect) {
+            return <Redirect to='/login'/>;
+        }
         return (
             <React.Fragment>
                 NewUser

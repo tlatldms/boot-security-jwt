@@ -17,7 +17,7 @@ import java.util.function.Function;
 public class JwtTokenUtil implements Serializable {
 
     private static final long serialVersionUID = -2550185165626007488L;
-    public static final long JWT_ACCESS_TOKEN_VALIDITY = 5; //5초
+    public static final long JWT_ACCESS_TOKEN_VALIDITY = 10* 60; //10분
     public static final long JWT_REFRESH_TOKEN_VALIDITY = 24 * 60 * 60 * 7; //일주일
     @Value("${jwt.secret}")
     private String secret;
@@ -36,15 +36,6 @@ public class JwtTokenUtil implements Serializable {
     }
     //for retrieveing any information from token we will need the secret key
     private Claims getAllClaimsFromToken(String token) {
-        /*
-        Claims c = null;
-        try {
-            c = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-        } catch (ExpiredJwtException ignored) {
-        }
-        return c;
-
-         */
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
 

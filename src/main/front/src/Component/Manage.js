@@ -2,39 +2,36 @@ import React, { Component } from 'react'
 import axios from 'axios';
 import ManageItem from './ManageItem';
 import cookie from 'react-cookies';
-
+const headers = {
+    'Content-Type': 'application/json',
+    'Authorization' : "Bearer "+ cookie.load('access-token')
+};
+const data = {
+    accessToken: cookie.load('access-token')
+};
 class Manage extends Component {
 
     constructor(props) {
         super(props)
         this.state = {
             users: [],
-            notAuthorized: false,
-            accessToken: cookie.load('access-token'),
-            refreshToken: cookie.load('refresh-token')
+            Authorized: false,
         }
     }
+    
     componentDidMount(){
-        axios.get("http://localhost:8080/admin/getusers",
-        {headers: {
-            "Authorization" : "Bearer "+ this.state.accessToken
-          }
-        }
-        )
-        .then(res => {
-            console.log(res.status);
+        axios.get("http://localhost:8080/admin/getusers", {
+            headers: headers
+        }).then(res => {
             this.setState({
-                users: res.data
+                users: res.data,
+                Authorized: true
             });
         }
         ).catch(e => {
-            if (e.response) {
-                if (e.response.status==500) {
-                    this.setState({
-                        notAuthorized: true
-                    });
-                }
-            }
+            this.setState({
+                Authorized: false
+            });
         })
     }
 
@@ -49,7 +46,7 @@ class Manage extends Component {
         return (
             <div>
                 관리 페이지!
-                {this.state.notAuthorized ? <div> 권한이 없습니다.</div> : userList}
+                {this.state.Authorized ? userList : <div>  권한이 없습니다. admin으로 로그인하세요.</div> }
             </div>
         )
     }

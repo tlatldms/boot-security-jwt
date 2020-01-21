@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
+import java.util.concurrent.TimeUnit;
 
 
 @Component
@@ -70,17 +70,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        final String requestTokenHeader = request.getHeader("Authorization");
+        System.out.println("REQUEST : " + request.getHeader("Authorization"));
+        String requestTokenHeader = request.getHeader("Authorization");
+
         logger.info("tokenHeader: " + requestTokenHeader);
         String username = null;
         String jwtToken = null;
 
-
-        // JWT Token is in the form "Bearer token". Remove Bearer word and get
-        // only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             logger.info("token in requestfilter: " + jwtToken);
+
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
@@ -91,26 +91,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         } else {
             logger.warn("JWT Token does not begin with Bearer String");
         }
+
         if (username == null) {
             logger.info("token maybe expired: username is null.");
-        }
-        else if (username != null && !jtu.isTokenExpired(jwtToken)) {
+        } else if (redisTemplate.opsForValue().get(jwtToken) != null) {
+            logger.warn("this token already logout!");
+        } else {
             //DB access 대신에 파싱한 정보로 유저 만들기!
             Authentication authen =  getAuthentication(jwtToken);
             //만든 authentication 객체로 매번 인증받기
             SecurityContextHolder.getContext().setAuthentication(authen);
-        } else {
-            logger.info("else");
         }
-        logger.info("CONTEXT  :  " + SecurityContextHolder.getContext().getAuthentication());
-
-            /*
-            ValueOperations<String, Object> vop = redisTemplate.opsForValue();
-            Token result = (Token)vop.get(username);
-            String tokstr = result.getToken();앞
-            */
-
-
         chain.doFilter(request, response);
     }
 }

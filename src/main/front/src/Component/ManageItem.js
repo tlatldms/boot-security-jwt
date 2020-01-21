@@ -1,5 +1,13 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import axios from 'axios';
+import cookie from 'react-cookies';
+
+const headers = {
+    'Content-Type': 'application/json',
+    'Authorization' : "Bearer "+ cookie.load('access-token')
+};
+
+
 class ManageItem extends Component {
     constructor(props) {
         super(props)
@@ -9,19 +17,20 @@ class ManageItem extends Component {
         }
     }
 
+
     deleteUser = (e) => {
-        axios.post("http://localhost:8080/admin/deleteuser",
-        {
+        const data = {
             username: this.props.database.username
         }
-        )
-        .then(res => {
+        axios.post("http://localhost:8080/admin/deleteuser", data, {
+            headers: headers
+        }).then(res => {
             console.log(res);
+            window.location.reload();
         }
         ).catch(e => {
             console.log(e);
         })
-
     }
     render() {
         const {username, role, email} = this.props.database;
